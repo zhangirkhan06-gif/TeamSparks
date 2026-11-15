@@ -220,8 +220,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 <footer><div class="wrap"><span>TeamSparks. We light up the workday.</span><span>Astana · Online · <a href="https://t.me/TeamSparksBot" target="_blank" rel="noopener">t.me/TeamSparksBot</a></span></div></footer>
 
 <script>
-// Paste your n8n Production Webhook URL here after you create the Webhook node.
-var WEBHOOK_URL = "";
+// n8n Production Webhook (workflow must be published/active)
+var WEBHOOK_URL = "https://ai2.mnu.kz/webhook/teamsparks-inquiry";
 (function(){var box=document.getElementById("sparks");if(!box||window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;for(var i=0;i<24;i++){var s=document.createElement("span");s.style.cssText="left:"+(Math.random()*100)+"%;--s:"+(2+Math.random()*4)+"px;--d:"+(4+Math.random()*5)+"s;--l:-"+(Math.random()*9)+"s;--x:"+(Math.random()*90-45)+"px";box.appendChild(s);}})();
 var f = document.getElementById("f"), msg = document.getElementById("msg");
 f.addEventListener("submit", function(e){
