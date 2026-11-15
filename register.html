@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Register for your event — TeamSparks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF3F5; --surface:#FFFFFF; --ink:#1E3A4C; --muted:#4F6573;
+  --field:#3E6A80; --signal:#F4A98C; --signal-ink:#1E3A4C; --line:#CBD8DE;
+  --hero-bg:#27475B; --hero-ink:#F4F8FA;
+  --head:'Bricolage Grotesque','Trebuchet MS',system-ui,sans-serif;
+  --body:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{color-scheme:dark;--bg:#0F1E29;--surface:#182B38;--ink:#EAF2F5;--muted:#A6BCC7;--field:#9CC7D4;--line:#2C4455;--hero-bg:#0B1822}
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.6 var(--body);min-height:100vh;display:flex;flex-direction:column}
+h1{font-family:var(--head);line-height:1.08;margin:0}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--field);outline-offset:3px}
+header{background:radial-gradient(ellipse at 78% 55%,#7FA9B8 0%,#4F7A8F 38%,#2F5267 75%),var(--hero-bg);color:var(--hero-ink)}
+.wrap{max-width:640px;margin:0 auto;padding:0 22px}
+nav{padding:18px 0}
+.logo{font:800 1.35rem var(--head);text-decoration:none;letter-spacing:-.02em}
+.logo span{color:var(--signal)}
+.intro{padding:20px 0 44px}
+.intro h1{font-size:clamp(2rem,6vw,3rem);font-weight:800;letter-spacing:-.03em}
+.intro p{margin:12px 0 0;opacity:.88}
+.tag{display:inline-block;margin-top:14px;padding:4px 12px;border-radius:999px;background:rgba(255,255,255,.14);font-weight:600;font-size:.9rem}
+main{flex:1;padding:36px 0 60px}
+form{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px;display:grid;gap:16px}
+label{display:grid;gap:6px;font-weight:600;font-size:.95rem}
+input,select{font:400 1rem var(--body);padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);width:100%}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.btn{display:inline-block;background:var(--signal);color:var(--signal-ink);font:600 1rem var(--body);padding:14px 26px;border-radius:999px;border:0;cursor:pointer}
+.btn:hover{filter:brightness(1.06)} .btn:disabled{opacity:.6;cursor:wait}
+#msg{min-height:1.4em;font-weight:600;margin:0}
+#msg.ok{color:var(--field)} #msg.err{color:#C0392B}
+.done{text-align:center;padding:40px 28px}
+.done b{display:block;font:800 1.8rem var(--head);margin-bottom:8px}
+footer{background:var(--hero-bg);color:var(--hero-ink);padding:24px 0;font-size:.92rem}
+@media(max-width:480px){.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <nav><a class="logo" href="./">Team<span>Sparks</span></a></nav>
+    <div class="intro">
+      <h1>Join your team event</h1>
+      <p>Takes 30 seconds. We use your diet and merch size to prepare food and gifts for everyone.</p>
+      <span class="tag" id="evtTag">Event: —</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <form id="f" novalidate>
+      <label>Your name<input name="name" required autocomplete="name"></label>
+      <label>Email<input name="email" type="email" required autocomplete="email"></label>
+      <div class="row">
+        <label>Diet
+          <select name="diet">
+            <option>None</option><option>Vegetarian</option><option>Vegan</option>
+            <option>Halal</option><option>Gluten-free</option><option>Lactose-free</option><option>Other</option>
+          </select>
+        </label>
+        <label>Merch size
+          <select name="merch_size">
+            <option>XS</option><option>S</option><option selected>M</option>
+            <option>L</option><option>XL</option><option>XXL</option>
+          </select>
+        </label>
+      </div>
+      <button class="btn" type="submit" id="sendBtn">Register</button>
+      <p id="msg" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</main>
+
+<footer><div class="wrap">TeamSparks · Astana · <a href="https://t.me/TeamSparksBot" target="_blank" rel="noopener">t.me/TeamSparksBot</a></div></footer>
+
+<script>
+var WEBHOOK_URL = "https://ai2.mnu.kz/webhook/teamsparks-register";
+var params = new URLSearchParams(location.search);
+var eventId = (params.get("event") || "").trim();
+var f = document.getElementById("f"), msg = document.getElementById("msg"), btn = document.getElementById("sendBtn");
+document.getElementById("evtTag").textContent = "Event: " + (eventId || "missing");
+if(!eventId){
+  msg.className = "err";
+  msg.textContent = "This link has no event ID. Please use the link your HR manager sent you.";
+  btn.disabled = true;
+}
+f.addEventListener("submit", function(e){
+  e.preventDefault();
+  msg.className = ""; msg.textContent = "";
+  if(!eventId) return;
+  if(!f.checkValidity()){ msg.className="err"; msg.textContent="Please enter your name and a valid email."; f.reportValidity(); return; }
+  var data = Object.fromEntries(new FormData(f).entries());
+  data.event = eventId;
+  btn.disabled = true; msg.textContent = "Sending...";
+  fetch(WEBHOOK_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)})
+    .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return {ok:r.ok, j:j}; }); })
+    .then(function(res){
+      if(!res.ok || res.j.success === false){ throw new Error(res.j.message || "Registration failed."); }
+      f.outerHTML = '<div class="done" role="status"><b>You’re in! ✨</b>' + (res.j.message || "See you at the event!").replace(/</g,"&lt;") + '</div>';
+    })
+    .catch(function(err){
+      btn.disabled = false; msg.className = "err";
+      msg.textContent = (err && err.message && err.message !== "Failed to fetch") ? err.message : "We could not reach the server. Please try again in a minute.";
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How was your event? — TeamSparks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF3F5; --surface:#FFFFFF; --ink:#1E3A4C; --muted:#4F6573;
+  --field:#3E6A80; --signal:#F4A98C; --signal-ink:#1E3A4C; --line:#CBD8DE;
+  --hero-bg:#27475B; --hero-ink:#F4F8FA;
+  --head:'Bricolage Grotesque','Trebuchet MS',system-ui,sans-serif;
+  --body:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{color-scheme:dark;--bg:#0F1E29;--surface:#182B38;--ink:#EAF2F5;--muted:#A6BCC7;--field:#9CC7D4;--line:#2C4455;--hero-bg:#0B1822}
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.6 var(--body);min-height:100vh;display:flex;flex-direction:column}
+h1{font-family:var(--head);line-height:1.08;margin:0}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--field);outline-offset:3px}
+header{background:radial-gradient(ellipse at 78% 55%,#7FA9B8 0%,#4F7A8F 38%,#2F5267 75%),var(--hero-bg);color:var(--hero-ink)}
+.wrap{max-width:680px;margin:0 auto;padding:0 22px}
+nav{padding:18px 0}
+.logo{font:800 1.35rem var(--head);text-decoration:none;letter-spacing:-.02em}
+.logo span{color:var(--signal)}
+.intro{padding:20px 0 44px}
+.intro h1{font-size:clamp(2rem,6vw,3rem);font-weight:800;letter-spacing:-.03em}
+.intro p{margin:12px 0 0;opacity:.88}
+main{flex:1;padding:36px 0 60px}
+form{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px;display:grid;gap:18px}
+label,legend{display:grid;gap:6px;font-weight:600;font-size:.95rem}
+input,textarea{font:400 1rem var(--body);padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);width:100%}
+textarea{min-height:92px;resize:vertical}
+fieldset{border:0;padding:0;margin:0}
+.scale{display:grid;grid-template-columns:repeat(11,1fr);gap:6px;margin-top:8px}
+.scale label{position:relative}
+.scale input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;pointer-events:none}
+.scale span{display:block;text-align:center;padding:10px 0;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);font-weight:600;cursor:pointer;user-select:none}
+.scale input:checked+span{background:var(--signal);border-color:var(--signal);color:var(--signal-ink)}
+.scale input:focus-visible+span{outline:3px solid var(--field);outline-offset:2px}
+.ends{display:flex;justify-content:space-between;color:var(--muted);font-size:.85rem;font-weight:500;margin-top:4px}
+.btn{display:inline-block;background:var(--signal);color:var(--signal-ink);font:600 1rem var(--body);padding:14px 26px;border-radius:999px;border:0;cursor:pointer}
+.btn:hover{filter:brightness(1.06)} .btn:disabled{opacity:.6;cursor:wait}
+#msg{min-height:1.4em;font-weight:600;margin:0}
+#msg.ok{color:var(--field)} #msg.err{color:#C0392B}
+.done{text-align:center;padding:40px 28px}
+.done b{display:block;font:800 1.8rem var(--head);margin-bottom:8px}
+footer{background:var(--hero-bg);color:var(--hero-ink);padding:24px 0;font-size:.92rem}
+@media(max-width:520px){.scale{grid-template-columns:repeat(6,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <nav><a class="logo" href="./">Team<span>Sparks</span></a></nav>
+    <div class="intro">
+      <h1 id="hi">How was the event?</h1>
+      <p>One minute, three questions. Your answers shape the report your company receives.</p>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <form id="f" novalidate>
+      <label>Email you registered with<input name="email" type="email" required autocomplete="email"></label>
+      <fieldset>
+        <legend>How likely are you to recommend this event to a colleague?</legend>
+        <div class="scale" id="scale"></div>
+        <div class="ends"><span>0 · not at all</span><span>10 · absolutely</span></div>
+      </fieldset>
+      <label>What did you like most?<textarea name="liked" maxlength="1000"></textarea></label>
+      <label>What should we improve?<textarea name="improve" maxlength="1000"></textarea></label>
+      <button class="btn" type="submit" id="sendBtn">Send feedback</button>
+      <p id="msg" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</main>
+
+<footer><div class="wrap">TeamSparks · Astana · <a href="https://t.me/TeamSparksBot" target="_blank" rel="noopener">t.me/TeamSparksBot</a></div></footer>
+
+<script>
+var WEBHOOK_URL = "https://ai2.mnu.kz/webhook/teamsparks-survey";
+var params = new URLSearchParams(location.search);
+var eventId = (params.get("event") || "").trim();
+var f = document.getElementById("f"), msg = document.getElementById("msg"), btn = document.getElementById("sendBtn");
+var scale = document.getElementById("scale");
+for(var i=0;i<=10;i++){
+  var l=document.createElement("label");
+  l.innerHTML='<input type="radio" name="nps" value="'+i+'"'+(i===0?' required':'')+'><span>'+i+'</span>';
+  scale.appendChild(l);
+}
+if(params.get("email")) f.email.value = params.get("email");
+if(params.get("name")) document.getElementById("hi").textContent = "How was the event, " + params.get("name") + "?";
+if(!eventId){
+  msg.className="err"; msg.textContent="This link has no event ID. Please open the survey from your email.";
+  btn.disabled=true;
+}
+f.addEventListener("submit", function(e){
+  e.preventDefault();
+  msg.className=""; msg.textContent="";
+  if(!eventId) return;
+  var data = Object.fromEntries(new FormData(f).entries());
+  if(!f.email.checkValidity()){ msg.className="err"; msg.textContent="Please enter a valid email."; f.email.focus(); return; }
+  if(data.nps === undefined){ msg.className="err"; msg.textContent="Please pick a score from 0 to 10."; return; }
+  data.event = eventId;
+  btn.disabled=true; msg.textContent="Sending...";
+  fetch(WEBHOOK_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)})
+    .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return {ok:r.ok, j:j}; }); })
+    .then(function(res){
+      if(!res.ok || res.j.success === false){ throw new Error(res.j.message || "Could not send feedback."); }
+      f.outerHTML='<div class="done" role="status"><b>Thank you! ✨</b>'+(res.j.message||"Your feedback was received.").replace(/</g,"&lt;")+'</div>';
+    })
+    .catch(function(err){
+      btn.disabled=false; msg.className="err";
+      msg.textContent=(err && err.message && err.message!=="Failed to fetch") ? err.message : "We could not reach the server. Please try again in a minute.";
+    });
+});
+</script>
+</body>
+</html>
